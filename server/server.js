@@ -106,7 +106,12 @@ const authenticateToken = (req, res, next) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running with MongoDB Atlas & AI APIs' });
+  res.json({ 
+    status: 'ok', 
+    message: 'Server is running with MongoDB Atlas & AI APIs',
+    version: '2.1.0',
+    features: ['delete-account', 'brevo-email', 'social-oauth']
+  });
 });
 
 // AUTH ENDPOINTS
