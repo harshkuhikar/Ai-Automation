@@ -218,8 +218,10 @@ app.post('/api/auth/verify-otp', async (req, res) => {
     // Delete OTP
     await OTP.findByIdAndDelete(otpRecord._id);
 
-    // Send welcome email
-    await sendWelcomeEmail(email, user.name);
+    // Send welcome email (don't wait for it)
+    sendWelcomeEmail(email, user.name).catch(err => {
+      console.log('Welcome email failed:', err.message);
+    });
 
     // Generate JWT
     const token = jwt.sign(

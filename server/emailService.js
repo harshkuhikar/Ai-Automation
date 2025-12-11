@@ -1,6 +1,6 @@
 /**
  * Email Service for OTP and Notifications
- * Supports Gmail and AWS SES
+ * Supports Gmail, AWS SES, and Resend
  * @author Harsh J Kuhikar
  * @copyright 2025 All Rights Reserved
  */
@@ -12,8 +12,13 @@ dotenv.config();
 
 // Create transporter based on configuration
 let transporter;
+let useResend = false;
 
-if (process.env.EMAIL_SERVICE === 'ses') {
+if (process.env.RESEND_API_KEY) {
+  // Resend Configuration (recommended for Railway)
+  useResend = true;
+  console.log('✅ Email Service: Resend configured');
+} else if (process.env.EMAIL_SERVICE === 'ses') {
   // AWS SES Configuration
   transporter = nodemailer.createTransport({
     host: process.env.SES_SMTP_HOST || 'email-smtp.us-east-1.amazonaws.com',
@@ -26,25 +31,32 @@ if (process.env.EMAIL_SERVICE === 'ses') {
   });
   console.log('✅ Email Service: AWS SES configured');
 } else {
-  // Gmail Configuration (default)
+  // Gmail Configuration with SSL (port 465)
   transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD
-    }
+    },
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 5000
   });
   console.log('✅ Email Service: Gmail configured');
 }
 
-// Verify email configuration on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.log('⚠️ Email service not configured:', error.message);
-  } else {
-    console.log('✅ Email service ready to send');
-  }
-});
+// Verify email configuration on startup (only for nodemailer)
+if (transporter) {
+  transporter.verify((error, success) => {
+    if (error) {
+      console.log('⚠️ Email service not configured:', error.message);
+    } else {
+      console.log('✅ Email service ready to send');
+    }
+  });
+}
 
 // Generate 6-digit OTP
 export function generateOTP() {
@@ -61,10 +73,34 @@ async function sendMailWithTimeout(mailOptions, timeoutMs = 5000) {
   ]);
 }
 
+// Send email via Resend API
+async function sendViaResend(to, subject, html) {
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: process.env.RESEND_FROM_EMAIL || 'AI Marketing <onboarding@resend.dev>',
+      to: [to],
+      subject,
+      html
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Resend API error');
+  }
+  
+  return response.json();
+}
+
 // Send OTP Email
 export async function sendOTPEmail(email, otp, name) {
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.EMAIL_USER || process.env.RESEND_FROM_EMAIL,
     to: email,
     subject: 'Verify Your Email - AI Marketing Platform',
     html: `
@@ -116,7 +152,11 @@ export async function sendOTPEmail(email, otp, name) {
   };
 
   try {
-    await sendMailWithTimeout(mailOptions, 5000); // 5 second timeout
+    if (useResend) {
+      await sendViaResend(email, mailOptions.subject, mailOptions.html);
+    } else {
+      await sendMailWithTimeout(mailOptions, 5000); // 5 second timeout
+    }
     return { success: true };
   } catch (error) {
     console.error('Email send error:', error);
