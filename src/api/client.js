@@ -1,16 +1,19 @@
 import axios from 'axios';
 
+// Production API URL - Railway Backend
+const RAILWAY_API_URL = 'https://ai-automation-production-c35e.up.railway.app/api';
+
 // Auto-detect API URL based on environment
 const getApiBase = () => {
-  // If VITE_API_URL is set, use it (for split deployment: Vercel + Railway)
+  // If VITE_API_URL is set, use it
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  // In production on Vercel, use the Railway backend
+  // In production, ALWAYS use Railway backend
   if (import.meta.env.PROD) {
-    return 'https://ai-automation-production-c35e.up.railway.app/api';
+    return RAILWAY_API_URL;
   }
-  // In development, use localhost
+  // In development only, use localhost
   return 'http://localhost:3001/api';
 };
 

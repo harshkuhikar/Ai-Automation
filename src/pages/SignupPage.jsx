@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = 'https://ai-automation-ten-pi.vercel.app/api';
 
 export default function SignupPage() {
     const [step, setStep] = useState('signup'); // 'signup' or 'verify'
