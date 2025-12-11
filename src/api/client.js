@@ -8,8 +8,7 @@ const getApiBase = () => {
   }
   // In production on Vercel, use the Railway backend
   if (import.meta.env.PROD) {
-    // IMPORTANT: Update this URL after Railway deployment
-    return 'https://ai-automation-production.up.railway.app/api';
+    return 'https://ai-automation-production-c35e.up.railway.app/api';
   }
   // In development, use localhost
   return 'http://localhost:3001/api';
