@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
-const API_URL = 'https://ai-automation-ten-pi.vercel.app/api';
+// Production API URL - Railway Backend
+const API_URL = import.meta.env.PROD
+    ? 'https://ai-automation-production-c35e.up.railway.app/api'
+    : 'http://localhost:3001/api';
 
 export default function AuthModal({ mode: initialMode, onClose, onSuccess }) {
     const [mode, setMode] = useState(initialMode); // 'login', 'signup', 'verify'

@@ -1026,7 +1026,10 @@ Make each description specific, visual, and relevant to the content's main point
         try {
             console.log('[IMAGE LOADER] Loading image:', url)
             // Use backend proxy to avoid CORS issues
-            const proxyUrl = `http://localhost:3001/api/proxy-image?url=${encodeURIComponent(url)}`
+            const apiBase = import.meta.env.PROD
+                ? 'https://ai-automation-production-c35e.up.railway.app/api'
+                : 'http://localhost:3001/api'
+            const proxyUrl = `${apiBase}/proxy-image?url=${encodeURIComponent(url)}`
             console.log('[IMAGE LOADER] Using proxy:', proxyUrl)
 
             const response = await fetch(proxyUrl)
@@ -1060,7 +1063,10 @@ Make each description specific, visual, and relevant to the content's main point
     const loadImageAsArrayBuffer = async (url) => {
         try {
             // Use backend proxy to avoid CORS issues
-            const proxyUrl = `http://localhost:3001/api/proxy-image?url=${encodeURIComponent(url)}`
+            const apiBase = import.meta.env.PROD
+                ? 'https://ai-automation-production-c35e.up.railway.app/api'
+                : 'http://localhost:3001/api'
+            const proxyUrl = `${apiBase}/proxy-image?url=${encodeURIComponent(url)}`
 
             const response = await fetch(proxyUrl)
             if (!response.ok) throw new Error('Failed to load image')

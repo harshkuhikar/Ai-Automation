@@ -11,7 +11,10 @@ import { User, Mail, Phone, MapPin, Building, Globe, Calendar, Award, TrendingUp
 import { usePlan } from '../context/PlanContext'
 import axios from 'axios'
 
-const API_URL = 'http://localhost:3001/api'
+// Production API URL - Railway Backend
+const API_URL = import.meta.env.PROD
+    ? 'https://ai-automation-production-c35e.up.railway.app/api'
+    : 'http://localhost:3001/api'
 
 export default function Profile() {
     const navigate = useNavigate()

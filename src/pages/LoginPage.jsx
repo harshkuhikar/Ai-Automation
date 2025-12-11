@@ -3,7 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api';
+// Production API URL - Railway Backend
+const API_URL = import.meta.env.PROD
+    ? 'https://ai-automation-production-c35e.up.railway.app/api'
+    : 'http://localhost:3001/api';
 
 export default function LoginPage() {
     const [formData, setFormData] = useState({ email: '', password: '' });
