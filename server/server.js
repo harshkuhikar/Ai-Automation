@@ -895,60 +895,78 @@ app.post('/api/content/generate-human', async (req, res) => {
     const tone = config.tone || 'professional';
     const minWords = config.minWords || 1500;
 
-    // Use Google AI API directly (Node.js - no Python needed)
-    const GOOGLE_AI_KEY = process.env.GOOGLE_AI_KEY;
+    // Use OpenRouter API (more reliable than Google AI)
+    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
     
-    if (!GOOGLE_AI_KEY) {
-      return res.status(500).json({ error: 'Google AI API key not configured' });
+    if (!OPENROUTER_API_KEY) {
+      return res.status(500).json({ error: 'OpenRouter API key not configured' });
     }
 
-    const prompt = `Write a comprehensive, SEO-optimized article about "${topic}".
+    console.log('[Content] Generating content for:', topic);
 
-Requirements:
-- Minimum ${minWords} words
+    const prompt = `You are an expert content writer. Write a comprehensive, SEO-optimized article about "${topic}".
+
+STRICT REQUIREMENTS:
+- Write MINIMUM ${minWords} words (this is mandatory)
 - Tone: ${tone}
-- Include an engaging introduction
-- Use proper headings (H2, H3) with ## and ### markdown
-- Include bullet points and numbered lists where appropriate
-- Add relevant statistics and facts
-- Write in a human, conversational style (avoid AI-sounding phrases)
+- Start with an engaging introduction that hooks the reader
+- Use proper HTML headings: <h2> for main sections, <h3> for subsections
+- Include bullet points (<ul><li>) and numbered lists (<ol><li>) where appropriate
+- Add real statistics, facts, and data points
+- Write in a natural, human conversational style
 - Include a compelling conclusion with call-to-action
-- Make it informative and valuable for readers
+- Make it informative, valuable, and engaging
 
-Important: Write naturally like a human expert would. Avoid phrases like "In today's world", "It's important to note", "In conclusion". Be direct and engaging.
+IMPORTANT WRITING STYLE:
+- Write like a human expert, NOT like AI
+- AVOID these phrases: "In today's world", "It's important to note", "In conclusion", "Let's dive in", "Without further ado"
+- Use short paragraphs (2-3 sentences max)
+- Include personal insights and opinions
+- Use active voice
+- Add rhetorical questions to engage readers
 
-Write the complete article now:`;
+FORMAT: Write in clean HTML format with proper <h2>, <h3>, <p>, <ul>, <ol>, <li> tags.
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GOOGLE_AI_KEY}`, {
+Now write the complete ${minWords}+ word article:`;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:5173',
+        'X-Title': 'AI Marketing Platform'
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 8192
-        }
+        model: 'anthropic/claude-3-haiku',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 8000,
+        temperature: 0.7
       })
     });
 
     const data = await response.json();
     
     if (data.error) {
-      console.error('Google AI error:', data.error);
+      console.error('OpenRouter error:', data.error);
       return res.status(500).json({ error: data.error.message || 'AI generation failed' });
     }
 
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
+      console.error('No content in response:', data);
       return res.status(500).json({ error: 'No content generated. Please try again.' });
     }
 
     // Generate title from topic
     const title = topic.charAt(0).toUpperCase() + topic.slice(1);
     
-    // Count words
-    const wordCount = content.split(/\s+/).length;
+    // Count words (strip HTML tags first)
+    const textOnly = content.replace(/<[^>]*>/g, ' ');
+    const wordCount = textOnly.split(/\s+/).filter(w => w.length > 0).length;
+
+    console.log('[Content] Generated successfully:', wordCount, 'words');
 
     res.json({
       content: content,
