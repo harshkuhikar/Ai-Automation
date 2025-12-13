@@ -884,6 +884,7 @@ app.post('/api/content/generate', async (req, res) => {
 // SINGLE-STEP HUMAN CONTENT GENERATION
 app.post('/api/content/generate-human', async (req, res) => {
   try {
+    console.log('[Content] generate-human endpoint called');
     const config = req.body;
     
     // Validate config
@@ -897,6 +898,8 @@ app.post('/api/content/generate-human', async (req, res) => {
 
     // Use OpenRouter API (more reliable than Google AI)
     const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+    
+    console.log('[Content] OpenRouter API key configured:', !!OPENROUTER_API_KEY);
     
     if (!OPENROUTER_API_KEY) {
       return res.status(500).json({ error: 'OpenRouter API key not configured' });
@@ -947,15 +950,17 @@ Now write the complete ${minWords}+ word article:`;
 
     const data = await response.json();
     
+    console.log('[Content] OpenRouter response status:', response.status);
+    
     if (data.error) {
-      console.error('OpenRouter error:', data.error);
+      console.error('[Content] OpenRouter error:', JSON.stringify(data.error));
       return res.status(500).json({ error: data.error.message || 'AI generation failed' });
     }
 
     const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
-      console.error('No content in response:', data);
+      console.error('[Content] No content in response:', JSON.stringify(data));
       return res.status(500).json({ error: 'No content generated. Please try again.' });
     }
 
@@ -976,7 +981,8 @@ Now write the complete ${minWords}+ word article:`;
     });
 
   } catch (error) {
-    console.error('Content generation error:', error);
+    console.error('[Content] Generation error:', error.message);
+    console.error('[Content] Full error:', error);
     res.status(500).json({ error: error.message || 'An unexpected error occurred' });
   }
 });
