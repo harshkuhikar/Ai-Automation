@@ -151,12 +151,12 @@ export default function AuthModal({ mode: initialMode, onClose, onSuccess }) {
                     {/* Title */}
                     <h2 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                         {mode === 'login' && 'Welcome Back'}
-                        {mode === 'signup' && 'Harsh'}
+                        {mode === 'signup' && 'Create Account'}
                         {mode === 'verify' && 'Verify Email'}
                     </h2>
                     <p className="text-center text-gray-600 mb-6">
                         {mode === 'login' && 'Login to access your dashboard'}
-                        {mode === 'signup' && 'Harsh'}
+                        {mode === 'signup' && 'Sign up to get started'}
                         {mode === 'verify' && 'Enter the OTP sent to your email'}
                     </p>
 
