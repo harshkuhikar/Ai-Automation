@@ -92,15 +92,39 @@ export default function Profile() {
             const firstName = nameParts[0] || ''
             const lastName = nameParts.slice(1).join(' ') || ''
 
-            // Merge loaded profile with user data
+            // Merge loaded profile with user data - ensure no null values
+            const profileData = userData.profile || {}
             setProfile(prev => ({
                 ...prev,
                 // Set from main user data
-                firstName: userData.profile?.firstName || firstName,
-                lastName: userData.profile?.lastName || lastName,
+                firstName: profileData.firstName || firstName || '',
+                lastName: profileData.lastName || lastName || '',
                 email: userData.email || '',
-                // Merge any saved profile data
-                ...(userData.profile || {})
+                phone: profileData.phone || '',
+                dateOfBirth: profileData.dateOfBirth || '',
+                gender: profileData.gender || '',
+                profileImage: profileData.profileImage || '',
+                jobTitle: profileData.jobTitle || '',
+                company: profileData.company || '',
+                department: profileData.department || '',
+                employeeId: profileData.employeeId || '',
+                joiningDate: profileData.joiningDate || '',
+                address: profileData.address || '',
+                city: profileData.city || '',
+                state: profileData.state || '',
+                country: profileData.country || '',
+                zipCode: profileData.zipCode || '',
+                timezone: profileData.timezone || 'Asia/Kolkata',
+                website: profileData.website || '',
+                twitter: profileData.twitter || '',
+                linkedin: profileData.linkedin || '',
+                github: profileData.github || '',
+                instagram: profileData.instagram || '',
+                bio: profileData.bio || '',
+                projectsCompleted: profileData.projectsCompleted || 0,
+                campaignsLaunched: profileData.campaignsLaunched || 0,
+                clientsServed: profileData.clientsServed || 0,
+                reportsGenerated: profileData.reportsGenerated || 0
             }))
 
             setLoading(false)
